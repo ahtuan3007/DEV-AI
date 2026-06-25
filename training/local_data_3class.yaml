@@ -1,0 +1,8 @@
+path: D:/DEV_AI/dataset_3class
+train: images/train
+val: images/val
+
+names:
+  0: Nam_Tay
+  1: Chi_Ngon_Tro
+  2: Xoe_Tay

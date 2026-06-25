@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smart Hospital Room · AI Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+
+<body>
+  <!-- SOS khẩn cấp: viền nhấp nháy bao toàn trang -->
+  <div id="sos-frame" class="sos-frame" aria-hidden="true">
+    <div class="sos-siren" id="sos-siren">
+      <svg viewBox="0 0 24 24" width="34" height="34" aria-hidden="true">
+        <path fill="currentColor"
+          d="M12 2a1 1 0 0 1 1 1v1.06a7 7 0 0 1 6 6.94V16l1.4 1.4a1 1 0 0 1-.7 1.7H4.3a1 1 0 0 1-.7-1.7L5 16v-5a7 7 0 0 1 6-6.94V3a1 1 0 0 1 1-1Zm0 18a2.5 2.5 0 0 0 2.45-2h-4.9A2.5 2.5 0 0 0 12 20Z" />
+      </svg>
+      <span>SOS · KHẨN CẤP</span>
+    </div>
+  </div>
+
+  <div class="app">
+    <!-- ============ HEADER ============ -->
+    <header class="topbar glass">
+      <div class="brand">
+        <div class="brand-mark">
+          <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true">
+            <path fill="currentColor" d="M11 2h2v6h6v2h-6v6h-2v-6H5V8h6V2Z" opacity=".0" />
+            <path fill="currentColor" d="M10 3h4v5h5v4h-5v9h-4v-9H5V8h5V3Z" />
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1>Phòng Bệnh Thông Minh</h1>
+          <p>Smart Hospital Room · Điều khiển bằng cử chỉ tay</p>
+        </div>
+      </div>
+
+      <div class="topbar-status">
+        <div class="pill" id="pill-ai" title="Trạng thái não bộ AI">
+          <span class="dot dot-idle"></span><span class="pill-label">AI Offline</span>
+        </div>
+        <div class="pill" id="pill-ws" title="Kết nối backend Python qua WebSocket" style="display:none">
+          <span class="dot dot-idle"></span><span class="pill-label">WS Ngắt</span>
+        </div>
+        <button id="btn-voice" class="btn-voice" title="Tắt âm thanh" aria-label="Toggle âm thanh">🔊</button>
+        <div class="clock" id="clock">--:--:--</div>
+      </div>
+    </header>
+
+    <!-- ============ 3 COLUMNS ============ -->
+    <main class="grid">
+
+      <!-- ====== CỘT TRÁI: MẮT THẦN AI ====== -->
+      <section class="col col-left glass">
+        <div class="col-head">
+          <h2><span class="hicon">👁️</span> Mắt Thần AI</h2>
+          <span class="tag" id="fps-tag">— FPS</span>
+        </div>
+
+        <div class="camera-wrap">
+          <video id="cam" playsinline muted></video>
+          <canvas id="overlay"></canvas>
+
+          <!-- Progress ring 5s + trạng thái nhận diện -->
+          <div class="ring-wrap" id="ring-wrap">
+            <svg class="ring" viewBox="0 0 120 120">
+              <circle class="ring-track" cx="60" cy="60" r="52"></circle>
+              <circle class="ring-fill" id="ring-fill" cx="60" cy="60" r="52"></circle>
+            </svg>
+            <div class="ring-center">
+              <div class="ring-emoji" id="ring-emoji">🖐️</div>
+              <div class="ring-label" id="ring-label">Chờ tín hiệu</div>
+            </div>
+          </div>
+
+          <div class="cam-empty" id="cam-empty">
+            <div class="cam-empty-inner">
+              <div class="cam-empty-icon">📷</div>
+              <p>Khung hình camera</p>
+              <small>Bật "Camera AI" để não bộ YOLOv8 nhận diện bàn tay,<br />hoặc dùng các nút giả lập bên
+                dưới.</small>
+            </div>
+          </div>
+        </div>
+
+        <!-- Thông số AI -->
+        <div class="ai-stats">
+          <div class="stat">
+            <span class="stat-k">Cử chỉ</span>
+            <span class="stat-v" id="stat-gesture">—</span>
+          </div>
+          <div class="stat">
+            <span class="stat-k">Độ tin cậy</span>
+            <span class="stat-v" id="stat-conf">—</span>
+          </div>
+          <div class="stat">
+            <span class="stat-k">Bàn tay</span>
+            <span class="stat-v" id="stat-hand">0</span>
+          </div>
+          <div class="stat">
+            <span class="stat-k">Nguồn</span>
+            <span class="stat-v" id="stat-source">Giả lập</span>
+          </div>
+        </div>
+
+        <!-- Điều khiển nguồn AI -->
+        <div class="source-controls">
+          <button class="btn btn-primary" id="btn-cam">🎥 Bật Camera AI</button>
+          <button class="btn btn-ghost" id="btn-ws" style="display:none">🔌 Kết nối Backend</button>
+        </div>
+      </section>
+
+      <!-- ====== CỘT GIỮA: DIGITAL TWIN ====== -->
+      <section class="col col-center glass">
+        <div class="col-head">
+          <h2><span class="hicon">🏥</span> Phòng Bệnh Giả Lập</h2>
+          <span class="tag tag-live" id="twin-state">Sẵn sàng</span>
+        </div>
+
+        <div class="twin-stage" id="twin-stage">
+          <!-- ROOM SVG (flat / isometric-ish) -->
+          <svg id="room" class="room" viewBox="0 0 600 470" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="wallG" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#eaf2fb" />
+                <stop offset="1" stop-color="#d7e6f7" />
+              </linearGradient>
+              <linearGradient id="floorG" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#cdd9e8" />
+                <stop offset="1" stop-color="#aebfd2" />
+              </linearGradient>
+              <linearGradient id="skyG" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#bfe3ff" />
+                <stop offset="1" stop-color="#eaf7ff" />
+              </linearGradient>
+              <linearGradient id="bedG" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#f4f8fd" />
+                <stop offset="1" stop-color="#dbe7f4" />
+              </linearGradient>
+              <radialGradient id="glowG" cx="50%" cy="35%" r="65%">
+                <stop offset="0" stop-color="#fff3c4" stop-opacity="0.95" />
+                <stop offset="55%" stop-color="#ffe08a" stop-opacity="0.45" />
+                <stop offset="100%" stop-color="#ffe08a" stop-opacity="0" />
+              </radialGradient>
+              <linearGradient id="curtainG" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#9fb8d6" />
+                <stop offset="1" stop-color="#7d9bc0" />
+              </linearGradient>
+            </defs>
+
+            <!-- walls & floor -->
+            <rect x="0" y="0" width="600" height="330" fill="url(#wallG)" />
+            <polygon points="0,330 600,330 600,470 0,470" fill="url(#floorG)" />
+            <line x1="0" y1="330" x2="600" y2="330" stroke="#9fb2c9" stroke-width="2" />
+
+            <!-- window + sky + curtains -->
+            <g id="window">
+              <rect x="60" y="70" width="200" height="150" rx="8" fill="url(#skyG)" stroke="#b8c8db" stroke-width="4" />
+              <circle cx="110" cy="115" r="20" fill="#fff3b0" opacity="0.9" />
+              <line x1="160" y1="70" x2="160" y2="220" stroke="#b8c8db" stroke-width="4" />
+              <line x1="60" y1="145" x2="260" y2="145" stroke="#b8c8db" stroke-width="4" />
+              <!-- curtains -->
+              <g id="curtain-left" class="curtain">
+                <rect x="48" y="60" width="80" height="172" rx="6" fill="url(#curtainG)" />
+                <g stroke="#6f8db3" stroke-width="2" opacity="0.5">
+                  <line x1="68" y1="62" x2="68" y2="230" />
+                  <line x1="88" y1="62" x2="88" y2="230" />
+                  <line x1="108" y1="62" x2="108" y2="230" />
+                </g>
+              </g>
+              <g id="curtain-right" class="curtain">
+                <rect x="192" y="60" width="80" height="172" rx="6" fill="url(#curtainG)" />
+                <g stroke="#6f8db3" stroke-width="2" opacity="0.5">
+                  <line x1="212" y1="62" x2="212" y2="230" />
+                  <line x1="232" y1="62" x2="232" y2="230" />
+                  <line x1="252" y1="62" x2="252" y2="230" />
+                </g>
+              </g>
+              <rect x="44" y="52" width="232" height="14" rx="7" fill="#90a6c2" />
+            </g>
+
+            <!-- ceiling lamp + glow -->
+            <g id="lamp">
+              <line x1="430" y1="0" x2="430" y2="40" stroke="#8aa0bb" stroke-width="3" />
+              <path d="M408 40 h44 l-8 22 h-28 z" fill="#b9c8dc" stroke="#94a8c2" stroke-width="2" />
+              <ellipse id="bulb" cx="430" cy="64" rx="13" ry="9" fill="#cfd9e6" />
+              <ellipse id="lamp-glow" cx="430" cy="86" rx="150" ry="120" fill="url(#glowG)" opacity="0" />
+            </g>
+
+            <!-- vital monitor -->
+            <g id="monitor">
+              <rect x="500" y="120" width="84" height="60" rx="6" fill="#10243b" />
+              <polyline id="ecg" points="506,160 518,160 524,142 532,172 540,150 548,160 578,160" fill="none"
+                stroke="#34e3a3" stroke-width="2.5" stroke-linejoin="round" />
+              <rect x="500" y="180" width="84" height="6" fill="#0a1828" />
+              <rect x="536" y="186" width="12" height="26" fill="#1f3a57" />
+            </g>
+
+            <!-- hospital bed -->
+            <g id="bed">
+              <!-- legs + base -->
+              <rect x="300" y="360" width="250" height="16" rx="6" fill="#9fb2c9" />
+              <rect x="312" y="376" width="12" height="40" fill="#8da2bb" />
+              <rect x="526" y="376" width="12" height="40" fill="#8da2bb" />
+              <!-- mattress base -->
+              <rect x="300" y="320" width="250" height="44" rx="12" fill="url(#bedG)" stroke="#ccd9e8"
+                stroke-width="2" />
+              <!-- foot rail -->
+              <rect x="540" y="300" width="10" height="70" rx="5" fill="#aebfd2" />
+              <!-- adjustable backrest (head) -->
+              <g id="backrest">
+                <rect x="300" y="300" width="120" height="40" rx="12" fill="url(#bedG)" stroke="#ccd9e8"
+                  stroke-width="2" />
+                <!-- pillow -->
+                <rect x="312" y="306" width="54" height="28" rx="13" fill="#ffffff" stroke="#dbe7f4" stroke-width="2" />
+                <!-- patient head -->
+                <circle id="patient-head" cx="345" cy="320" r="15" fill="#f3c9a8" stroke="#e0b08a" stroke-width="1.5" />
+                <!-- head rail -->
+                <rect x="300" y="282" width="10" height="60" rx="5" fill="#aebfd2" />
+              </g>
+              <!-- blanket -->
+              <rect x="410" y="322" width="135" height="40" rx="10" fill="#bcd3ee" />
+              <rect x="410" y="322" width="135" height="12" rx="6" fill="#a9c4e6" />
+            </g>
+
+            <!-- speech bubble: gọi bác sĩ -->
+            <g id="call-bubble" class="call-bubble">
+              <rect x="318" y="222" width="184" height="54" rx="16" fill="#ffffff" stroke="#bcd3ee" stroke-width="2" />
+              <polygon points="360,276 380,276 366,294" fill="#ffffff" stroke="#bcd3ee" stroke-width="2" />
+              <text x="338" y="246" class="bubble-emoji">🩺</text>
+              <text x="368" y="246" class="bubble-title">Đang gọi bác sĩ…</text>
+              <g class="bubble-dots">
+                <circle cx="372" cy="262" r="4" fill="#3b82f6" />
+                <circle cx="388" cy="262" r="4" fill="#3b82f6" />
+                <circle cx="404" cy="262" r="4" fill="#3b82f6" />
+              </g>
+            </g>
+
+            <!-- dark overlay (đèn tắt) -->
+            <rect id="dark-overlay" x="0" y="0" width="600" height="470" fill="#0b1830" opacity="0.42"
+              pointer-events="none" />
+            <!-- warm tint (đèn bật ấm) -->
+            <rect id="warm-overlay" x="0" y="0" width="600" height="470" fill="#ffcf6e" opacity="0"
+              pointer-events="none" style="mix-blend-mode:soft-light" />
+          </svg>
+
+          <!-- device chips -->
+          <div class="device-chips">
+            <div class="chip" id="chip-light"><span>💡</span> Đèn: <b id="v-light">Tắt</b></div>
+            <div class="chip" id="chip-bed"><span>🛏️</span> Giường: <b id="v-bed">Phẳng</b></div>
+            <div class="chip" id="chip-curtain"><span>🪟</span> Rèm: <b id="v-curtain">Đóng</b></div>
+          </div>
+        </div>
+
+        <!-- MOCK BUTTONS (5 hiệu ứng) -->
+        <div class="mock-panel">
+          <div class="mock-title">🧪 Bảng giả lập tín hiệu (Mock)</div>
+          <div class="mock-grid">
+            <button class="mock-btn" data-g="fist"><span class="m-emoji">✊</span><span>Nắm tay<small>Bật/tắt
+                  đèn</small></span></button>
+            <button class="mock-btn" data-g="point"><span class="m-emoji">☝️</span><span>Chỉ ngón trỏ<small>Nâng/hạ
+                  giường</small></span></button>
+            <button class="mock-btn" data-g="swipe_left"><span class="m-emoji">👈</span><span>Vuốt trái<small>Kéo rèm
+                  vào</small></span></button>
+            <button class="mock-btn" data-g="swipe_right"><span class="m-emoji">👉</span><span>Vuốt phải<small>Mở rèm
+                  ra</small></span></button>
+            <button class="mock-btn mock-sos" data-g="open"><span class="m-emoji">🖐️</span><span>Xòe tay
+                (SOS)<small>Báo động khẩn</small></span></button>
+            <button class="mock-btn" data-g="wave"><span class="m-emoji">👋</span><span>Vẫy tay<small>Gọi bác
+                  sĩ</small></span></button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====== CỘT PHẢI: THÔNG TIN Y TẾ ====== -->
+      <aside class="col col-right glass">
+        <div class="col-head">
+          <h2><span class="hicon">📋</span> Thông Tin Y Tế</h2>
+        </div>
+
+        <!-- Session stats -->
+        <div class="session-stats">
+          <div class="ss-card">
+            <div class="ss-icon">⏱️</div>
+            <div class="ss-val" id="ss-duration">00:00</div>
+            <div class="ss-label">Thời gian phiên</div>
+          </div>
+          <div class="ss-card">
+            <div class="ss-icon">🤜</div>
+            <div class="ss-val" id="ss-total">0</div>
+            <div class="ss-label">Tổng cử chỉ</div>
+          </div>
+          <div class="ss-card">
+            <div class="ss-icon" id="ss-top-icon">—</div>
+            <div class="ss-val ss-val-sm" id="ss-top-label">Chưa có</div>
+            <div class="ss-label">Phổ biến nhất</div>
+          </div>
+        </div>
+
+        <!-- Rehab progress -->
+        <div class="widget">
+          <div class="widget-head">
+            <span>🤲 Phục hồi chức năng</span>
+            <span class="widget-sub" id="rehab-count">0/10 lần</span>
+          </div>
+          <div class="rehab-bar">
+            <div class="rehab-fill" id="rehab-fill"></div>
+          </div>
+          <p class="widget-note">Bài tập nắm / xòe tay hôm nay</p>
+        </div>
+
+        <!-- Action log -->
+        <div class="widget widget-grow">
+          <div class="widget-head">
+            <span>🗒️ Nhật ký hành động</span>
+            <button class="mini-clear" id="log-clear">Xóa</button>
+          </div>
+          <ul class="log-list" id="log-list"></ul>
+        </div>
+
+        <!-- Timeline -->
+        <div class="widget">
+          <div class="widget-head"><span>📅 Lịch trình hôm nay</span></div>
+          <ul class="timeline" id="timeline">
+            <li class="tl done"><span class="tl-time">08:00</span><span class="tl-act">Uống thuốc sáng</span></li>
+            <li class="tl done"><span class="tl-time">09:30</span><span class="tl-act">Đo huyết áp</span></li>
+            <li class="tl now"><span class="tl-time">10:00</span><span class="tl-act">Bác sĩ thăm khám</span></li>
+            <li class="tl"><span class="tl-time">12:00</span><span class="tl-act">Bữa trưa &amp; thuốc</span></li>
+            <li class="tl"><span class="tl-time">15:00</span><span class="tl-act">Vật lý trị liệu</span></li>
+            <li class="tl"><span class="tl-time">20:00</span><span class="tl-act">Uống thuốc tối</span></li>
+          </ul>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast" aria-live="polite"></div>
+
+  <!-- onnxruntime-web (offline) cho não bộ YOLOv8 -->
+  <script src="vendor/onnx/ort.min.js"></script>
+  <script type="module" src="js/app.js"></script>
+</body>
+
+</html>

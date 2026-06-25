@@ -1,0 +1,257 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[vietnamese]{babel}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{geometry}
+\usepackage{listings}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{subfigure}
+\usepackage{titlesec}
+\usepackage{indentfirst}
+
+% Cấu hình lề trang
+\geometry{
+    a4paper,
+    total={170mm,257mm},
+    left=30mm,
+    right=20mm,
+    top=20mm,
+    bottom=20mm
+}
+
+% Cấu hình code listing
+\lstset{
+    language=Python,
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{blue},
+    stringstyle=\color{red},
+    commentstyle=\color{green!60!black},
+    numbers=left,
+    numberstyle=\tiny,
+    stepnumber=1,
+    numbersep=5pt,
+    backgroundcolor=\color{gray!10},
+    showspaces=false,
+    showstringspaces=false,
+    frame=single,
+    tabsize=2,
+    breaklines=true,
+    breakatwhitespace=false,
+}
+
+% Cấu hình tiêu đề mục
+\titleformat{\section}{\normalfont\Large\bfseries}{\thesection.}{1em}{}
+\titleformat{\subsection}{\normalfont\large\bfseries}{\thesubsection.}{1em}{}
+
+\begin{document}
+
+% ==================== TRANG BÌA ====================
+\begin{titlepage}
+    \begin{center}
+        \textbf{\large TRƯỜNG ĐẠI HỌC BÁCH KHOA / CÔNG NGHỆ...}\\
+        \textbf{\large KHOA CÔNG NGHỆ THÔNG TIN}\\
+        \text{-------------------o0o-------------------}\\[2cm]
+        
+        \includegraphics[width=0.25\textwidth]{logo_dai_hoc.png}\\[1.5cm] % Thay logo_dai_hoc.png bằng ảnh logo của trường bạn trên Overleaf
+        
+        \textbf{\Large BÁO CÁO BÀI TẬP LỚN}\\
+        \textbf{\huge NHẬP MÔN TRÍ TUỆ NHÂN TẠO / THỊ GIÁC MÁY TÍNH}\\[1cm]
+        
+        \text{---------------------------------------------------------}\\[0.5cm]
+        \textbf{\Large ĐỀ TÀI:}\\[0.5cm]
+        \textbf{\huge XÂY DỰNG HỆ THỐNG TRỢ LÝ BỆNH VIỆN THÔNG MINH ĐIỀU KHIỂN BẰNG CỬ CHỈ TAY SỬ DỤNG YOLOv8}\\[0.5cm]
+        \text{---------------------------------------------------------}\\[1.5cm]
+    \end{center}
+    
+    \begin{flushleft}
+        \textbf{Giảng viên hướng dẫn:} PGS. TS. Nguyễn Văn A \\
+        \textbf{Sinh viên thực hiện:} \\
+        - Nguyễn Văn B (MSSV: 202X0001) \\
+        - Trần Thị C (MSSV: 202X0002) \\
+        \textbf{Lớp:} KHMT-01 K65
+    \end{flushleft}
+    
+    \vfill
+    \begin{center}
+        \textbf{Hà Nội, Tháng 6/2026}
+    \end{center}
+\end{titlepage}
+
+\newpage
+% ==================== MỤC LỤC ====================
+\tableofcontents
+\newpage
+
+% ==================== NỘI DUNG ====================
+
+\section{Giới thiệu đề tài}
+\subsection{Đặt vấn đề}
+Trong môi trường y tế hiện đại, đặc biệt là tại các phòng bệnh hồi sức tích cực hoặc phòng chăm sóc bệnh nhân đặc biệt, khả năng tương tác của bệnh nhân với môi trường xung quanh gặp nhiều hạn chế. Việc sử dụng các nút bấm vật lý truyền thống gặp các trở ngại như khó tiếp cận đối với bệnh nhân bị liệt một phần, nguy cơ lây nhiễm chéo vi khuẩn/virus qua các bề mặt tiếp xúc, hoặc không tiện dụng trong các tình huống khẩn cấp.
+
+\subsection{Ý tưởng giải pháp}
+Để giải quyết bài toán trên, dự án này đề xuất xây dựng hệ thống \textbf{Smart Hospital Assistant} — hỗ trợ bệnh nhân điều khiển các thiết bị cơ bản trong phòng bệnh thông qua cử chỉ tay không tiếp xúc. Hệ thống sử dụng camera thu thập luồng hình ảnh trực tiếp, nhận dạng cử chỉ bằng mô hình học sâu YOLOv8 và thực thi lệnh tương ứng.
+
+\subsection{Các lớp cử chỉ (Classes)}
+Hệ thống triển khai 3 lớp cử chỉ hành động chính và trạng thái nghỉ:
+\begin{itemize}
+    \item \textbf{Nam\_Tay} (Nắm tay): Ra lệnh bật/tắt thiết bị chiếu sáng (Đèn).
+    \item \textbf{Chi\_Ngon\_Tro} (Chỉ ngón trỏ): Ra lệnh nâng/hạ giường bệnh nhân.
+    \item \textbf{Xoe\_Tay} (Xòe tay): Kích hoạt tín hiệu cứu trợ khẩn cấp (SOS).
+    \item \textbf{Bình thường / Nghỉ} (Idle): Trạng thái nghỉ của bệnh nhân khi không thực hiện cử chỉ nào. Lớp này được xử lý gián tiếp bằng kỹ thuật ảnh nền (Negative background) không nhãn để tăng cường tính chống nhiễu của mô hình.
+\end{itemize}
+
+---
+
+\section{Kiến trúc hệ thống và Luồng xử lý}
+Hệ thống được thiết kế theo mô hình luồng dữ liệu thời gian thực:
+\begin{figure}[H]
+    \centering
+    \text{[Camera/Webcam]} $\rightarrow$ \text{[OpenCV Đọc Frame]} $\rightarrow$ \text{[YOLOv8 Nhận dạng]} $\rightarrow$ \text{[Bộ lọc Dwell/Anti-flicker]} $\rightarrow$ \text{[Điều khiển/Phát âm thanh]}
+    \caption{Kiến trúc luồng xử lý thông tin}
+\end{figure}
+
+Luồng hoạt động cụ thể:
+\begin{enumerate}
+    \item \textbf{Thu nhận hình ảnh:} Camera ghi hình bệnh nhân ở tần số khoảng 30 FPS.
+    \item \textbf{Nhận diện cử chỉ:} Frame hình ảnh được chuyển qua mô hình YOLOv8 để định vị bàn tay và phân loại cử chỉ.
+    \item \textbf{Bộ lọc chống nhiễu (Dwell Logic):} Để tránh kích hoạt nhầm do cử chỉ thoáng qua, hệ thống yêu cầu bệnh nhân phải duy trì cử chỉ liên tục trong một khoảng thời gian thiết lập (ví dụ: 5 giây) trước khi gửi tín hiệu điều khiển.
+    \item \textbf{Điều khiển & Phản hồi:} Khi cử chỉ hợp lệ được xác nhận, hệ thống thực hiện hành động giả lập (bật/tắt đèn, chỉnh giường, phát cảnh báo âm thanh SOS).
+\end{enumerate}
+
+---
+
+\section{Xây dựng Dataset và Tiền xử lý}
+\subsection{Thu thập dữ liệu}
+Dữ liệu được thu thập bằng cách quay video trực tiếp các hành vi cử chỉ của bệnh nhân dưới nhiều góc độ, khoảng cách và điều kiện ánh sáng khác nhau để tăng tính tổng quát hóa của mô hình. 
+Sau đó, các video được trích xuất thành ảnh tĩnh (frames) thông qua đoạn script tự động của dự án:
+\begin{lstlisting}[caption={Script trích xuất frame từ video raw}]
+python training/01_extract_frames.py --every-n 6 --max-per-video 800
+\end{lstlisting}
+
+\subsection{Gán nhãn dữ liệu trên Roboflow}
+Toàn bộ dữ liệu ảnh được tải lên nền tảng Roboflow để tiến hành vẽ hộp bao (bounding box) quanh bàn tay:
+\begin{itemize}
+    \item Vẽ hộp bao ôm sát phần bàn tay và cổ tay để mô hình học chính xác đặc trưng.
+    \item Loại bỏ các ảnh mờ, mất tay hoặc điều kiện ánh sáng quá tệ để giữ chất lượng dataset sạch.
+\end{itemize}
+
+\subsection{Chiến lược Xử lý Trạng thái Nghỉ (Background Images)}
+Để loại bỏ các cảnh báo giả khi bệnh nhân không làm gì (trạng thái Bình thường), chúng tôi không gán nhãn cho các ảnh thuộc lớp này. Các ảnh này được đưa vào mô hình dưới dạng **Background images (Negative samples)** — tức là ảnh có tồn tại trong tập huấn luyện nhưng file nhãn tương ứng `.txt` hoàn toàn để trống. YOLOv8 sẽ học được cách phớt lờ các hình ảnh bàn tay thả lỏng thông thường, từ đó giảm thiểu tối đa tỉ lệ False Positive.
+
+\subsection{Thông kê phân bố tập dữ liệu}
+Tổng số mẫu ảnh thu thập được phân bổ như sau:
+\begin{table}[H]
+    \centering
+    \caption{Phân bổ dữ liệu Train/Val}
+    \begin{tabular}{lccc}
+        \toprule
+        \textbf{Lớp cử chỉ} & \textbf{Tập Train (80\%)} & \textbf{Tập Val (20\%)} & \textbf{Tổng số ảnh} \\
+        \midrule
+        Nam\_Tay & 483 & 121 & 604 \\
+        Chi\_Ngon\_Tro & 448 & 112 & 560 \\
+        Xoe\_Tay & 625 & 156 & 781 \\
+        Ảnh nền (Background) & 493 & 123 & 616 \\
+        \midrule
+        \textbf{Tổng cộng} & \textbf{2049} & \textbf{512} & \textbf{2561} \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+---
+
+\section{Huấn luyện mô hình}
+Mô hình được huấn luyện trên môi trường điện toán đám mây **Google Colab** sử dụng GPU **Tesla T4**.
+
+\subsection{Thông số huấn luyện (Hyperparameters)}
+Chúng tôi lựa chọn kiến trúc mạng nhẹ nhất **YOLOv8 Nano (yolov8n)** nhằm đảm bảo tốc độ phản hồi thời gian thực trên các thiết bị cấu hình trung bình. Các tham số chính được thiết lập:
+\begin{itemize}
+    \item \textbf{Model gốc:} \texttt{yolov8n.pt}
+    \item \textbf{Số lượng Epoch:} 100
+    \item \textbf{Kích thước ảnh đầu vào (imgsz):} 640
+    \item \textbf{Kích thước lô (batch):} 16
+    \item \textbf{Thiết bị huấn luyện:} GPU CUDA (device=0)
+    \item \textbf{Patience (Early Stopping):} 20 (dừng học nếu sau 20 epoch liên tục loss trên tập kiểm định không cải thiện).
+\end{itemize}
+
+\subsection{Quá trình huấn luyện trên Colab}
+Tiến trình tải dữ liệu từ Google Drive, cài đặt thư viện và kích hoạt huấn luyện được tự động hóa thông qua mã nguồn Python:
+\begin{lstlisting}[caption={Lệnh kích hoạt huấn luyện YOLOv8}]
+from ultralytics import YOLO
+
+model = YOLO('yolov8n.pt')
+results = model.train(
+    data='/content/dataset/data.yaml',
+    epochs=100,
+    imgsz=640,
+    batch=16,
+    device=0,
+    patience=20,
+    project='/content/runs',
+    name='gesture_hospital_v1'
+)
+\end{lstlisting}
+
+---
+
+\section{Kết quả thực nghiệm và Đánh giá}
+\subsection{Độ chính xác mô hình}
+Sau khi hoàn thành huấn luyện, mô hình được đánh giá trên tập kiểm định độc lập và đạt được kết quả vô cùng ấn tượng:
+\begin{table}[H]
+    \centering
+    \caption{Chỉ số đánh giá mô hình trên tập Validation}
+    \begin{tabular}{lcccc}
+        \toprule
+        \textbf{Lớp cử chỉ} & \textbf{Precision} & \textbf{Recall} & \textbf{mAP@0.5} & \textbf{mAP@0.5:0.95} \\
+        \midrule
+        Toàn bộ (All) & 0.975 & 0.974 & 0.988 & 0.944 \\
+        Nam\_Tay & 0.968 & 0.943 & 0.977 & 0.916 \\
+        Chi\_Ngon\_Tro & 0.953 & 0.966 & 0.986 & 0.957 \\
+        Xoe\_Tay & 0.985 & 0.996 & 0.994 & 0.962 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\subsection{Hiệu năng và Tốc độ suy luận}
+\begin{itemize}
+    \item \textbf{Kích thước mô hình:} 6.2 MB (phù hợp nhúng vào các thiết bị biên IoT).
+    \item \textbf{Tốc độ suy luận (Inference Speed):} $\approx 30.0$ FPS (khoảng 33.3 ms/frame).
+    \item \textbf{Số lượng tham số (Parameters):} 3,006,428 parameters.
+    \item \textbf{Dung lượng FLOPs:} 8.1 GFLOPs.
+\end{itemize}
+
+---
+
+\section{Thiết kế Giao diện ứng dụng và Triển khai thực tế}
+Mô hình tốt nhất \texttt{best.pt} được tải về máy cục bộ và tích hợp vào ứng dụng web thông minh:
+\begin{figure}[H]
+    \centering
+    \text{[Web Frontend (HTML/CSS)]} $\leftrightarrow$ \text{[FastAPI Backend]} $\leftrightarrow$ \text{[OpenCV Video Stream + YOLOv8]}
+    \caption{Sơ đồ tích hợp Web App}
+\end{figure}
+
+Các tính năng nổi bật của ứng dụng:
+\begin{itemize}
+    \item \textbf{Giao diện tương tác trực quan:} Sử dụng HTML5 và CSS hiện đại hiển thị luồng camera thời gian thực và ô thông tin trạng thái cử chỉ đang nhận diện.
+    \item \textbf{Bộ đếm thời gian giữ cử chỉ (Dwell timer visualizer):} Hiển thị thanh đếm thời gian chạy từ 0 đến 5 giây để bệnh nhân quan sát và biết khi nào hành động được kích hoạt.
+    \item \textbf{Phản hồi giọng nói (Text-to-Speech):} Khi kích hoạt thành công cử chỉ (ví dụ: Nắm tay), hệ thống sẽ phát âm thanh cảnh báo ``Đã thực hiện bật đèn'' hoặc phát còi kêu khẩn cấp đối với SOS.
+\end{itemize}
+
+---
+
+\section{Kết luận và Hướng phát triển}
+\subsection{Kết quả đạt được}
+Dự án đã xây dựng thành công trợ lý bệnh viện thông minh điều khiển bằng cử chỉ tay không tiếp xúc. Mô hình YOLOv8n hoạt động ổn định với độ chính xác mAP@0.5 đạt trên 98\% và có khả năng suy luận thời gian thực với tốc độ 30 FPS. Bộ lọc Dwell-time giúp giảm đáng kể hiện tượng giật cục và nhận diện nhầm.
+
+\subsection{Hạn chế và Hướng đi tương lai}
+\begin{itemize}
+    \item \textbf{Hạn chế:} Hệ thống hiện tại chỉ nhận dạng các cử chỉ tĩnh (Static gestures). Trong các môi trường thực tế, bệnh nhân có thể muốn thực hiện các cử chỉ động (Dynamic gestures) như vẫy tay hoặc vẽ đường đi.
+    \item \textbf{Hướng phát triển:} Tích hợp thêm mạng LSTM hoặc mô hình Transformer kết hợp tọa độ landmark từ bàn tay để nhận dạng các chuỗi cử chỉ động phức tạp hơn trong tương lai.
+\end{itemize}
+
+\end{document}
