@@ -49,7 +49,7 @@ export class DigitalTwin {
     return open;
   }
 
-  // 🖐️ Xòe tay → SOS: viền nhấp nháy + còi quay
+  // 🖐️ Xòe tay → SOS: viền nhấp nháy + rũng màn hình
   triggerSOS() {
     this.state.sos = true;
     this.sosFrame.classList.add('active');

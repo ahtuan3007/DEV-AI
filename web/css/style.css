@@ -204,19 +204,16 @@ body::after {
   background: rgba(255, 255, 255, .8)
 }
 
-.clock{font-family:'JetBrains Mono',monospace;font-weight:600;font-size:14px;color:var(--ink);
-  background:rgba(255,255,255,.5);padding:8px 13px;border-radius:11px;border:1px solid var(--glass-line)}
-
-/* nút toggle âm thanh 🔊/🔇 */
-.btn-voice{
-  font-size:18px;line-height:1;padding:7px 10px;border-radius:11px;
-  border:1px solid var(--glass-line);background:rgba(255,255,255,.5);
-  cursor:pointer;transition:var(--t);color:var(--ink);
-  display:grid;place-items:center;
+.clock {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--ink);
+  background: rgba(255, 255, 255, .5);
+  padding: 8px 13px;
+  border-radius: 11px;
+  border: 1px solid var(--glass-line)
 }
-.btn-voice:hover{background:rgba(255,255,255,.85);transform:scale(1.08)}
-.btn-voice:active{transform:scale(.95)}
-.btn-voice.voice-off{opacity:.4;filter:grayscale(1)}
 
 /* ============ GRID ============ */
 .grid {
@@ -870,26 +867,6 @@ body.cam-live #cam-empty {
   }
 }
 
-/* ============ SESSION STATS (thay thế env-grid) ============ */
-.session-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-.ss-card{
-  background:rgba(255,255,255,.55);border:1px solid var(--glass-line);
-  border-radius:15px;padding:14px 10px;text-align:center;
-  transition:var(--t);position:relative;overflow:hidden;
-}
-.ss-card:hover{transform:translateY(-2px);background:rgba(255,255,255,.82)}
-.ss-icon{font-size:22px;margin-bottom:6px}
-.ss-val{
-  font-size:22px;font-weight:800;
-  font-family:'JetBrains Mono',monospace;
-  color:var(--blue-deep);letter-spacing:-.5px;
-  transition:transform .2s var(--ease);
-}
-.ss-val-sm{font-size:14px;font-weight:800;font-family:'Manrope',sans-serif;letter-spacing:normal}
-.ss-label{font-size:11px;font-weight:600;color:var(--ink-soft);margin-top:3px}
-@keyframes ssPopIn{0%{transform:scale(1.35);color:var(--good)}100%{transform:scale(1)}}
-.ss-val.pop{animation:ssPopIn .28s var(--ease)}
-
 .widget {
   background: rgba(255, 255, 255, .5);
   border: 1px solid var(--glass-line);
@@ -1360,4 +1337,74 @@ body.cam-live #cam-empty {
     animation-duration: .01ms !important;
     transition-duration: .08s !important
   }
+}
+
+/* ============ FOOTER BOTTOMBAR ============ */
+.bottombar {
+  grid-column: 1 / -1;
+  margin-top: 20px;
+  padding: 16px 20px;
+  border-radius: var(--r-lg);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.footer-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--ink-soft);
+  font-weight: 600;
+}
+.footer-links {
+  display: flex;
+  gap: 16px;
+}
+.footer-links a {
+  color: var(--blue);
+  text-decoration: none;
+  font-weight: 700;
+  transition: var(--t);
+}
+.footer-links a:hover {
+  color: var(--blue-deep);
+  text-decoration: underline;
+}
+
+/* ============ PATIENT INFO ============ */
+.patient-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.patient-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--glass-line);
+}
+.patient-row:last-child {
+  border-bottom: none;
+}
+.patient-k {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-faint);
+}
+.patient-v {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+/* env-card active state */
+.env-card.active {
+  background: rgba(22, 185, 129, .12);
+  border-color: rgba(22, 185, 129, .3);
+}
+.env-card.active .env-val {
+  color: var(--good);
 }

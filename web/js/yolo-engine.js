@@ -81,15 +81,30 @@ export class YoloEngine {
     }
   }
 
-  async start(onStage) {
-    onStage?.('Đang mở camera…');
-    const stream = await this._openCamera();
+  async start(onStage, fileUrl = null) {
+    onStage?.('Đang chuẩn bị video…');
+    let stream = null;
+    if (!fileUrl) {
+      stream = await this._openCamera();
+    }
     if (!this.session) {
       try { await this.init(onStage); }
-      catch (e) { stream.getTracks().forEach(t=>t.stop());
-        const err = new Error('Không nạp được model YOLOv8: ' + (e?.message||e)); err.code='AI_INIT'; throw err; }
+      catch (e) { 
+        if (stream) stream.getTracks().forEach(t=>t.stop());
+        const err = new Error('Không nạp được model YOLOv8: ' + (e?.message||e)); err.code='AI_INIT'; throw err; 
+      }
     }
-    this.video.srcObject = stream;
+    
+    if (fileUrl) {
+      this.video.srcObject = null;
+      this.video.src = fileUrl;
+      this.video.loop = true; // lặp lại video
+      this.video.muted = true;
+    } else {
+      this.video.src = "";
+      this.video.srcObject = stream;
+    }
+    
     await this.video.play();
     this.canvas.width = this.video.videoWidth || 640;
     this.canvas.height = this.video.videoHeight || 480;

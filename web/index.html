@@ -44,10 +44,9 @@
         <div class="pill" id="pill-ai" title="Trạng thái não bộ AI">
           <span class="dot dot-idle"></span><span class="pill-label">AI Offline</span>
         </div>
-        <div class="pill" id="pill-ws" title="Kết nối backend Python qua WebSocket" style="display:none">
+        <div class="pill" id="pill-ws" title="Kết nối backend Python qua WebSocket">
           <span class="dot dot-idle"></span><span class="pill-label">WS Ngắt</span>
         </div>
-        <button id="btn-voice" class="btn-voice" title="Tắt âm thanh" aria-label="Toggle âm thanh">🔊</button>
         <div class="clock" id="clock">--:--:--</div>
       </div>
     </header>
@@ -111,7 +110,9 @@
         <!-- Điều khiển nguồn AI -->
         <div class="source-controls">
           <button class="btn btn-primary" id="btn-cam">🎥 Bật Camera AI</button>
-          <button class="btn btn-ghost" id="btn-ws" style="display:none">🔌 Kết nối Backend</button>
+          <input type="file" id="video-upload" accept="video/*" style="display:none;" />
+          <button class="btn btn-ghost" id="btn-upload-vid" onclick="document.getElementById('video-upload').click()">📁 Tải Video Test</button>
+          <button class="btn btn-ghost" id="btn-voice">🔊 Bật Giọng Nói</button>
         </div>
       </section>
 
@@ -277,28 +278,39 @@
         </div>
       </section>
 
-      <!-- ====== CỘT PHẢI: THÔNG TIN Y TẾ ====== -->
+      <!-- ====== CỘT PHẢI: BẢNG ĐIỀU KHIỂN ====== -->
       <aside class="col col-right glass">
         <div class="col-head">
-          <h2><span class="hicon">📋</span> Thông Tin Y Tế</h2>
+          <h2><span class="hicon">🎛️</span> Bảng Điều Khiển</h2>
         </div>
 
-        <!-- Session stats -->
-        <div class="session-stats">
-          <div class="ss-card">
-            <div class="ss-icon">⏱️</div>
-            <div class="ss-val" id="ss-duration">00:00</div>
-            <div class="ss-label">Thời gian phiên</div>
+        <!-- Trạng thái thiết bị -->
+        <div class="env-grid">
+          <div class="env-card" id="card-light">
+            <div class="env-icon temp">💡</div>
+            <div class="env-meta"><span class="env-val" id="v-light-status">Tắt</span></div>
+            <div class="env-name">Đèn phòng</div>
           </div>
-          <div class="ss-card">
-            <div class="ss-icon">🤜</div>
-            <div class="ss-val" id="ss-total">0</div>
-            <div class="ss-label">Tổng cử chỉ</div>
+          <div class="env-card" id="card-bed">
+            <div class="env-icon humid">🛏️</div>
+            <div class="env-meta"><span class="env-val" id="v-bed-status">Phẳng</span></div>
+            <div class="env-name">Đầu giường</div>
           </div>
-          <div class="ss-card">
-            <div class="ss-icon" id="ss-top-icon">—</div>
-            <div class="ss-val ss-val-sm" id="ss-top-label">Chưa có</div>
-            <div class="ss-label">Phổ biến nhất</div>
+          <div class="env-card" id="card-curtain">
+            <div class="env-icon heart">🪟</div>
+            <div class="env-meta"><span class="env-val" id="v-curtain-status">Đóng</span></div>
+            <div class="env-name">Rèm cửa</div>
+          </div>
+        </div>
+
+        <!-- Thông tin bệnh nhân -->
+        <div class="widget">
+          <div class="widget-head"><span>🏥 Thông tin phòng bệnh</span></div>
+          <div class="patient-info">
+            <div class="patient-row"><span class="patient-k">Phòng:</span><span class="patient-v">201 · Khoa Nội</span></div>
+            <div class="patient-row"><span class="patient-k">Bệnh nhân:</span><span class="patient-v">Nguyễn Văn A</span></div>
+            <div class="patient-row"><span class="patient-k">Chế độ:</span><span class="patient-v" id="v-mode">Điều khiển cử chỉ</span></div>
+            <div class="patient-row"><span class="patient-k">Giọng nói:</span><span class="patient-v" id="v-voice-status">🔊 Đang bật</span></div>
           </div>
         </div>
 
@@ -337,7 +349,21 @@
         </div>
       </aside>
     </main>
-  </div>
+
+    <!-- ============ FOOTER ============ -->
+    <footer class="bottombar glass">
+      <div class="footer-content">
+        <p>&copy; 2026 Smart Hospital Room. Hệ thống điều khiển thông minh.</p>
+        <div class="footer-links">
+          <a href="#">Hướng dẫn</a>
+          <a href="#">Bảo mật</a>
+          <a href="#">Liên hệ</a>
+        </div>
+      </div>
+    </footer>
+  </div> <!-- Thẻ đóng của div.app -->
+
+  <!-- Âm thanh: dùng Web Speech API (TTS tiếng Việt, 100% offline) — xem js/app.js -->
 
   <!-- Toast -->
   <div class="toast" id="toast" aria-live="polite"></div>
